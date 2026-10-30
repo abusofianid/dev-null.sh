@@ -188,9 +188,7 @@ export function CommitCard({
     };
 
     const cancelEditing = () => {
-        setEditedBody(
-                                                            commit.body,
-                                                        );
+        setEditedBody(commit.body);
         setEditError(null);
         setIsEditing(false);
     };
@@ -446,7 +444,9 @@ export function CommitCard({
                                                     type="button"
                                                     onClick={(event) => {
                                                         event.stopPropagation();
-                                                        setEditedBody(commit.body);
+                                                        setEditedBody(
+                                                            commit.body,
+                                                        );
                                                         setEditError(null);
                                                         setIsEditing(true);
                                                     }}
