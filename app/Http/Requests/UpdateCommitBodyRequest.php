@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Models\Commit;
 use App\Models\User;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class UpdateCommitBodyRequest extends FormRequest
@@ -22,7 +23,7 @@ final class UpdateCommitBodyRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string|\Illuminate\Contracts\Validation\ValidationRule>>
+     * @return array<string, array<int, string|ValidationRule>>
      */
     public function rules(): array
     {

@@ -41,7 +41,11 @@ export function CommitSecondaryActions({
                 <CopyLinkButton commit={commit} keyShortcut={keyShortcut} />
                 <CommitReportButton commit={commit} />
             </div>
-            <CommitActionsMenu commit={commit} canEdit={canEdit} onEdit={onEdit} />
+            <CommitActionsMenu
+                commit={commit}
+                canEdit={canEdit}
+                onEdit={onEdit}
+/>
         </div>
     );
 }

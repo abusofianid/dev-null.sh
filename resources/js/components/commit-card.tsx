@@ -188,7 +188,9 @@ export function CommitCard({
     };
 
     const cancelEditing = () => {
-        setEditedBody(commit.body);
+        setEditedBody(
+                                                            commit.body,
+                                                        );
         setEditError(null);
         setIsEditing(false);
     };
@@ -452,8 +454,10 @@ export function CommitCard({
                                                     className={cn(
                                                         'rounded-md p-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:opacity-100 sm:absolute sm:top-1/2 sm:-right-8 sm:my-0 sm:-translate-y-1/2 sm:opacity-0 sm:commit-hover:opacity-100 sm:commit-focus-within:opacity-100',
                                                         {
-                                                            'inline-flex': isFocused,
-                                                            'hidden sm:inline-flex': !isFocused,
+                                                            'inline-flex':
+                                                                isFocused,
+                                                            'hidden sm:inline-flex':
+                                                                !isFocused,
                                                         },
                                                     )}
                                                     data-test="edit-commit-button"
@@ -533,14 +537,20 @@ export function CommitCard({
                                         }}
                                         rows={Math.min(
                                             10,
-                                            Math.max(3, editedBody.split('\n').length),
+                                            Math.max(
+                                                3,
+                                                editedBody.split('\n').length,
+                                            ),
                                         )}
                                         maxLength={40000}
                                         className="min-h-24 w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-[15px] leading-relaxed text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
                                         data-test="edit-commit-textarea"
                                     />
                                     {editError && (
-                                        <p role="alert" className="text-sm text-destructive">
+                                        <p
+                                            role="alert"
+                                            className="text-sm text-destructive"
+                                        >
                                             {editError}
                                         </p>
                                     )}
@@ -558,7 +568,10 @@ export function CommitCard({
                                         <Button
                                             type="submit"
                                             size="sm"
-                                            disabled={isSavingEdit || editedBody === commit.body}
+                                            disabled={
+                                                isSavingEdit ||
+                                                editedBody === commit.body
+                                            }
                                         >
                                             <Save />
                                             {isSavingEdit ? 'Saving…' : 'Save'}
@@ -566,7 +579,10 @@ export function CommitCard({
                                     </div>
                                 </form>
                             ) : (
-                                <div ref={bodyRef} style={translation.bodyStyle}>
+                                <div
+                                    ref={bodyRef}
+                                    style={translation.bodyStyle}
+                                >
                                     <FoldedCommitBody
                                         segments={translation.segments}
                                         mentions={commit.mentions}
