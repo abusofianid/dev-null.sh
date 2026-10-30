@@ -76,7 +76,7 @@ export default function Show({
                     <div className="flex shrink-0 gap-1.5 sm:gap-2">
                         {canClaim && (
                             <Button variant="outline" asChild>
-                                {/* A form, so no other site can claim for the user. The server sends them on to GitHub. */}
+                                {/* A form, so no other site can claim for the user. */}
                                 <Link href={claimUrl} method="post" as="button">
                                     Claim
                                 </Link>
@@ -183,12 +183,12 @@ export default function Show({
                         {/* The reason in the text color, as red at this size is hard to read. */}
                         <AlertDescription className="text-foreground">
                             <p>{claimFailed.message}</p>
-                            {(claimFailed.approvalUrl || claimable) && (
+                            {(claimFailed.githubUrl || claimable) && (
                                 <div className="mt-2 flex flex-wrap gap-2">
-                                    {claimFailed.approvalUrl && (
+                                    {claimFailed.githubUrl && (
                                         <Button size="sm" asChild>
                                             <a
-                                                href={claimFailed.approvalUrl}
+                                                href={claimFailed.githubUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >

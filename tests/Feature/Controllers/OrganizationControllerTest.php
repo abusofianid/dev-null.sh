@@ -55,7 +55,7 @@ it('shows the admins of the organization but not its other members, first admin 
     $this->get('/@laravel')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->where('claimUrl', route('organization-admin.create', $organization))
+            ->where('claimUrl', route('organization-admin.store', $organization))
             ->where('settingsUrl', null)
             ->where('admins.0.id', $first->id)
             ->where('admins.0.handle', $first->profile->handle)

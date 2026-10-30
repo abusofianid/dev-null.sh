@@ -44,7 +44,7 @@ final readonly class OrganizationController
             'commits' => Inertia::scroll(fn () => $mentions->builder($organization, $currentUser)
                 ->cursorPaginate(20)
                 ->appends(['tab' => $request->tab()])),
-            'claimUrl' => route('organization-admin.create', $organization),
+            'claimUrl' => route('organization-admin.store', $organization),
             // Admins land on the Profile tab, which only they have...
             'settingsUrl' => match ($currentUser instanceof User ? $organization->roleOf($currentUser) : null) {
                 OrganizationRole::Admin => route('organization-profile.edit', $organization),

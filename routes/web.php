@@ -334,11 +334,8 @@ Route::middleware('auth')->group(function (): void {
     Route::get('banned', [BannedController::class, 'show'])->name('banned.show');
 
     // Claiming an organization's page, which GitHub confirms the user belongs to...
-    Route::post('organizations/{organization}/claim', [OrganizationAdminController::class, 'create'])
+    Route::post('organizations/{organization}/claim', [OrganizationAdminController::class, 'store'])
         ->whereUuid('organization')
-        ->middleware('throttle:10,1')
-        ->name('organization-admin.create');
-    Route::get('auth/github/callback/organizations', [OrganizationAdminController::class, 'store'])
         ->middleware('throttle:10,1')
         ->name('organization-admin.store');
 
