@@ -449,7 +449,13 @@ export function CommitCard({
                                                         setIsEditing(true);
                                                     }}
                                                     aria-label="Edit post"
-                                                    className="hidden rounded-md p-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:opacity-100 sm:inline-flex sm:absolute sm:top-1/2 sm:-right-1.5 sm:my-0 sm:-translate-y-1/2 sm:opacity-0 sm:commit-hover:opacity-100 sm:commit-focus-within:opacity-100"
+                                                    className={cn(
+                                                        'rounded-md p-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:opacity-100 sm:absolute sm:top-1/2 sm:-right-8 sm:my-0 sm:-translate-y-1/2 sm:opacity-0 sm:commit-hover:opacity-100 sm:commit-focus-within:opacity-100',
+                                                        {
+                                                            'inline-flex': isFocused,
+                                                            'hidden sm:inline-flex': !isFocused,
+                                                        },
+                                                    )}
                                                     data-test="edit-commit-button"
                                                 >
                                                     <Pencil className="size-4" />

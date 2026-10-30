@@ -40,7 +40,7 @@ final readonly class UpdateCommitBody
                 dispatch(new EmbedCommit($commit))->afterCommit();
             }
 
-            return $commit->refresh();
+            return Commit::query()->findOrFail($commit->id);
         }, attempts: 3);
     }
 }
