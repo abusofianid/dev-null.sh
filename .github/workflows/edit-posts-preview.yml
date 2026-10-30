@@ -150,18 +150,26 @@ jobs:
             if (editButtonCount !== 0) throw new Error(\`Expected no edit control before the feature; found \${editButtonCount}\`);
             await page.screenshot({ path: '/tmp/edit-posts-screenshots/before-desktop.png', fullPage: false });
           } else {
-            await page.getByTestId('edit-commit-button').waitFor();
+            const editButton = page.locator('[data-test="edit-commit-button"]');
+            await editButton.waitFor();
+            await page.getByText('Original text for the edit-post preview.', { exact: true }).hover();
             await page.screenshot({ path: '/tmp/edit-posts-screenshots/after-desktop.png', fullPage: false });
 
-            await page.getByTestId('edit-commit-button').click();
-            const editor = page.getByTestId('edit-commit-textarea');
+            await editButton.click();
+            const editor = page.locator('[data-test="edit-commit-textarea"]');
             await editor.waitFor();
             await page.screenshot({ path: '/tmp/edit-posts-screenshots/after-edit-form.png', fullPage: false });
 
             await editor.fill('Updated text saved by the preview browser test.');
             await page.getByRole('button', { name: 'Save' }).click();
-            await page.getByText('Updated text saved by the preview browser test.', { exact: true }).waitFor({ timeout: 15000 });
+            await editor.waitFor({ state: 'detached', timeout: 15000 });
+            await page.getByText('Updated text saved by the preview browser test.', { exact: true }).waitFor();
             await page.screenshot({ path: '/tmp/edit-posts-screenshots/after-saved.png', fullPage: false });
+
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.locator('[data-test="commit-actions-menu"]').click();
+            await page.getByRole('menuitem', { name: 'Edit post' }).waitFor({ state: 'visible' });
+            await page.screenshot({ path: '/tmp/edit-posts-screenshots/after-mobile-menu.png', fullPage: false });
           }
 
           if (pageErrors.length > 0) {

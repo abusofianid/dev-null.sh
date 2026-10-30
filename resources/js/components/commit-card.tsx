@@ -686,6 +686,12 @@ export function CommitCard({
                                     thread={thread}
                                     hasKeyboardShortcuts
                                     hasComposer={false}
+                                    canEdit={isEditable}
+                                    onEdit={() => {
+                                        setEditedBody(commit.body);
+                                        setEditError(null);
+                                        setIsEditing(true);
+                                    }}
                                     actions={
                                         <>
                                             <CommitStarButton

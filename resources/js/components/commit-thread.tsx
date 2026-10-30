@@ -565,6 +565,8 @@ export function ThreadActions({
     hasKeyboardShortcuts = false,
     hasComposer = true,
     isReply = false,
+    canEdit = false,
+    onEdit,
 }: {
     thread: Thread;
     actions?: ReactNode;
@@ -572,6 +574,8 @@ export function ThreadActions({
     /** False when the caller renders the reply composer itself, as ThreadReplyComposer. */
     hasComposer?: boolean;
     isReply?: boolean;
+    canEdit?: boolean;
+    onEdit?: () => void;
 }) {
     const { auth } = usePage().props;
     const { commit } = thread;
@@ -665,6 +669,8 @@ export function ThreadActions({
                         commit={commit}
                         keyShortcut={hasKeyboardShortcuts ? 'y' : undefined}
                         isReply={isReply}
+                        canEdit={canEdit}
+                        onEdit={onEdit}
                     />
                 )}
             </div>
