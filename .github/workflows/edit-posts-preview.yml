@@ -1,0 +1,186 @@
+name: edit-posts-preview
+
+on:
+  push:
+    branches:
+      - feature/edit-posts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: edit-posts-preview-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: \${{ matrix.variant }} screenshot and interaction check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: before
+            ref: production
+          - variant: after
+            ref: feature/edit-posts
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: devnull
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      APP_ENV: local
+      APP_DEBUG: true
+      APP_URL: http://127.0.0.1:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: devnull
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      DB_URL: ""
+      CACHE_STORE: array
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      OPENAI_API_KEY: ""
+      OPENCODE_API_KEY: ""
+      FATHOM_API_TOKEN: ""
+      REMOTES_REQUESTS: "false"
+      REMOTES_EVERYONE: "false"
+
+    steps:
+      - name: Checkout comparison revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: \${{ matrix.ref }}
+          persist-credentials: false
+
+      - name: Setup PHP, Bun, Node and dependencies
+        uses: ./.github/actions/setup
+
+      - name: Enable PostgreSQL extensions
+        run: |
+          for database in devnull template1; do
+            docker exec "\${{ job.services.postgres.id }}" \
+              psql -U root -d "$database" -v ON_ERROR_STOP=1 \
+              -c 'CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS pg_trgm;'
+          done
+
+      - name: Prepare isolated application database
+        run: |
+          php artisan key:generate --force --no-interaction
+          php artisan migrate:fresh --force --no-interaction
+          php artisan wayfinder:generate --with-form
+
+      - name: Build frontend
+        run: bun run build
+
+      - name: Create a local preview user and post
+        run: |
+          php artisan tinker --execute='$user = app(\App\Actions\CreateLocalUser::class)->handle("edit-preview"); $commit = \App\Models\Commit::factory()->create(["user_id" => $user->id, "body" => "Original text for the edit-post preview."]); file_put_contents("/tmp/edit-post-preview-path", route("commit.show", ["user" => $user, "commit" => $commit], absolute: false));'
+          echo "PREVIEW_PATH=$(cat /tmp/edit-post-preview-path)" >> "$GITHUB_ENV"
+
+      - name: Install Chromium for screenshots
+        run: bunx playwright install --with-deps chromium
+
+      - name: Start isolated Laravel preview
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 > /tmp/edit-post-preview.log 2>&1 &
+          echo $! > /tmp/edit-post-preview.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/edit-post-preview.log
+          exit 1
+
+      - name: Capture before and after screenshots and verify edit flow
+        run: |
+          mkdir -p /tmp/edit-posts-screenshots
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+
+          const baseUrl = 'http://127.0.0.1:8000';
+          const previewPath = process.env.PREVIEW_PATH;
+          const variant = process.env.VARIANT;
+          if (!previewPath) throw new Error('Missing preview route');
+
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+          const pageErrors = [];
+          page.on('pageerror', error => pageErrors.push(error.message));
+
+          await page.goto(baseUrl, { waitUntil: 'networkidle' });
+          const xsrf = (await page.context().cookies(baseUrl)).find(cookie => cookie.name === 'XSRF-TOKEN');
+          if (!xsrf) throw new Error('Laravel did not set the XSRF-TOKEN cookie');
+
+          const login = await page.request.post(\`\${baseUrl}/login/local\`, {
+            form: { handle: 'edit-preview' },
+            headers: {
+              'X-XSRF-TOKEN': decodeURIComponent(xsrf.value),
+              'X-Requested-With': 'XMLHttpRequest',
+              'Referer': baseUrl,
+            },
+          });
+          if (![200, 302, 303, 409].includes(login.status())) {
+            throw new Error(\`Local sign-in failed: HTTP \${login.status()} \${await login.text()}\`);
+          }
+
+          await page.goto(new URL(previewPath, baseUrl).toString(), { waitUntil: 'networkidle' });
+          await page.getByText('Original text for the edit-post preview.', { exact: true }).waitFor();
+
+          if (variant === 'before') {
+            const editButtonCount = await page.locator('[data-test="edit-commit-button"]').count();
+            if (editButtonCount !== 0) throw new Error(\`Expected no edit control before the feature; found \${editButtonCount}\`);
+            await page.screenshot({ path: '/tmp/edit-posts-screenshots/before-desktop.png', fullPage: false });
+          } else {
+            await page.getByTestId('edit-commit-button').waitFor();
+            await page.screenshot({ path: '/tmp/edit-posts-screenshots/after-desktop.png', fullPage: false });
+
+            await page.getByTestId('edit-commit-button').click();
+            const editor = page.getByTestId('edit-commit-textarea');
+            await editor.waitFor();
+            await page.screenshot({ path: '/tmp/edit-posts-screenshots/after-edit-form.png', fullPage: false });
+
+            await editor.fill('Updated text saved by the preview browser test.');
+            await page.getByRole('button', { name: 'Save' }).click();
+            await page.getByText('Updated text saved by the preview browser test.', { exact: true }).waitFor({ timeout: 15000 });
+            await page.screenshot({ path: '/tmp/edit-posts-screenshots/after-saved.png', fullPage: false });
+          }
+
+          if (pageErrors.length > 0) {
+            throw new Error(\`Browser page errors: \${pageErrors.join(' | ')}\`);
+          }
+
+          await browser.close();
+          console.log(\`PASS: \${variant} screenshot and page interaction checks completed\`);
+          NODE
+        env:
+          VARIANT: \${{ matrix.variant }}
+
+      - name: Upload screenshots and app logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edit-posts-\${{ matrix.variant }}-screenshots
+          path: |
+            /tmp/edit-posts-screenshots/
+            /tmp/edit-post-preview.log
+          if-no-files-found: warn
+          retention-days: 7
