@@ -1523,7 +1523,6 @@ it('keeps the query string out of the commit it moves to', function (): void {
         ->assertRedirect("/@OctoCat/commits/{$commit->id}?commit=nope");
 });
 
-
 it('may update the text of its own commit', function (): void {
     Queue::fake();
 
