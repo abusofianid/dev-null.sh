@@ -41,7 +41,8 @@ export default function Show({
 }) {
     const { props, flash } = usePage();
     const { auth } = props;
-    // Kept until the user leaves the page, as the background reloads bring no flash and would hide it.
+    // Kept until the user leaves the page, as the background reloads bring no flash and would hide it. Claiming
+    // redirects back here, so its links don't preserve state, or this would keep the value from before the claim.
     const [claimFailed] = useState(flash.claimFailed);
     // Only the first claim makes an admin. While a claim failed, its alert offers to try again instead.
     const claimable = auth.user !== null && admins.length === 0;
@@ -77,7 +78,12 @@ export default function Show({
                         {canClaim && (
                             <Button variant="outline" asChild>
                                 {/* A form, so no other site can claim for the user. */}
-                                <Link href={claimUrl} method="post" as="button">
+                                <Link
+                                    href={claimUrl}
+                                    method="post"
+                                    as="button"
+                                    preserveState={false}
+                                >
                                     Claim
                                 </Link>
                             </Button>
@@ -207,6 +213,7 @@ export default function Show({
                                                 href={claimUrl}
                                                 method="post"
                                                 as="button"
+                                                preserveState={false}
                                             >
                                                 Try again
                                             </Link>
