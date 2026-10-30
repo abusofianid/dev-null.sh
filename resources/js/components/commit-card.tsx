@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { CornerDownRight, Trash2 } from 'lucide-react';
-import type { MouseEvent, PointerEvent, ReactNode } from 'react';
+import { CornerDownRight, Pencil, Save, Trash2, X } from 'lucide-react';
+import type { FormEvent, MouseEvent, PointerEvent, ReactNode } from 'react';
 import { useCallback, useContext, useRef, useState } from 'react';
 import CommitController from '@/actions/App/Http/Controllers/CommitController';
 import CommitLinkPreviewController from '@/actions/App/Http/Controllers/CommitLinkPreviewController';
@@ -152,6 +152,10 @@ export function CommitCard({
     const [deletion, setDeletion] = useState<
         'idle' | 'confirming' | 'deleting'
     >('idle');
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedBody, setEditedBody] = useState(commit.body);
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [editError, setEditError] = useState<string | null>(null);
 
     const hasVisibleReplies = thread.isOpen && !!thread.replies?.length;
     const endsOnDot =
@@ -160,6 +164,7 @@ export function CommitCard({
     const isOwn = commit.user_id === auth.user?.id;
     const isFresh = isOwn && isWithinSeconds(commit.created_at, 15);
     const isDeletable = isOwn && canDelete;
+    const isEditable = isOwn && !wasDeleted;
     const hash = shortHash(commit.id);
     const permalink = CommitController.show({ user: commit.user, commit });
 
@@ -180,6 +185,31 @@ export function CommitCard({
     const cancelDeletion = () => {
         setDeletion('idle');
         deleteButtonRef.current?.focus();
+    };
+
+    const cancelEditing = () => {
+        setEditedBody(commit.body);
+        setEditError(null);
+        setIsEditing(false);
+    };
+
+    const updateCommitBody = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsSavingEdit(true);
+        setEditError(null);
+
+        router.put(
+            CommitController.update(commit),
+            { body: editedBody },
+            {
+                preserveScroll: true,
+                onSuccess: () => setIsEditing(false),
+                onError: (errors) =>
+                    setEditError(errors.body ?? 'Could not update this post.'),
+                onFinish: () => setIsSavingEdit(false),
+            },
+        );
     };
 
     const deleteCommit = () => {
@@ -407,6 +437,29 @@ export function CommitCard({
                                         {hash}
                                     </Link>
 
+                                    {isEditable && (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <button
+                                                    type="button"
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        setEditedBody(commit.body);
+                                                        setEditError(null);
+                                                        setIsEditing(true);
+                                                    }}
+                                                    aria-label="Edit post"
+                                                    className="hidden rounded-md p-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:opacity-100 sm:inline-flex sm:absolute sm:top-1/2 sm:-right-1.5 sm:my-0 sm:-translate-y-1/2 sm:opacity-0 sm:commit-hover:opacity-100 sm:commit-focus-within:opacity-100"
+                                                    data-test="edit-commit-button"
+                                                >
+                                                    <Pencil className="size-4" />
+                                                </button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                Edit post
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    )}
                                     {isDeletable && (
                                         <Tooltip>
                                             <TooltipTrigger asChild>
@@ -451,26 +504,83 @@ export function CommitCard({
                                     replying to @{commit.parent.user.handle}
                                 </Link>
                             )}
-                            <div ref={bodyRef} style={translation.bodyStyle}>
-                                <FoldedCommitBody
-                                    segments={translation.segments}
-                                    mentions={commit.mentions}
-                                    organizationMentions={
-                                        commit.organization_mentions
-                                    }
-                                    previewSegments={
-                                        isFolded && !isFocused
-                                            ? translation.previewSegments
-                                            : null
-                                    }
-                                    className={cn(
-                                        'mt-0.5',
-                                        isFocused
-                                            ? 'text-[17px]'
-                                            : 'text-[15px]',
+                            {isEditing ? (
+                                <form
+                                    className="mt-2 space-y-2"
+                                    onSubmit={updateCommitBody}
+                                    onClick={(event) => event.stopPropagation()}
+                                    data-test="edit-commit-form"
+                                >
+                                    <textarea
+                                        autoFocus
+                                        aria-label="Edit post text"
+                                        aria-invalid={editError !== null}
+                                        value={editedBody}
+                                        onChange={(event) =>
+                                            setEditedBody(event.target.value)
+                                        }
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Escape') {
+                                                event.preventDefault();
+                                                cancelEditing();
+                                            }
+                                        }}
+                                        rows={Math.min(
+                                            10,
+                                            Math.max(3, editedBody.split('\n').length),
+                                        )}
+                                        maxLength={40000}
+                                        className="min-h-24 w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-[15px] leading-relaxed text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+                                        data-test="edit-commit-textarea"
+                                    />
+                                    {editError && (
+                                        <p role="alert" className="text-sm text-destructive">
+                                            {editError}
+                                        </p>
                                     )}
-                                />
-                            </div>
+                                    <div className="flex justify-end gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={cancelEditing}
+                                            disabled={isSavingEdit}
+                                        >
+                                            <X />
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            size="sm"
+                                            disabled={isSavingEdit || editedBody === commit.body}
+                                        >
+                                            <Save />
+                                            {isSavingEdit ? 'Saving…' : 'Save'}
+                                        </Button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <div ref={bodyRef} style={translation.bodyStyle}>
+                                    <FoldedCommitBody
+                                        segments={translation.segments}
+                                        mentions={commit.mentions}
+                                        organizationMentions={
+                                            commit.organization_mentions
+                                        }
+                                        previewSegments={
+                                            isFolded && !isFocused
+                                                ? translation.previewSegments
+                                                : null
+                                        }
+                                        className={cn(
+                                            'mt-0.5',
+                                            isFocused
+                                                ? 'text-[17px]'
+                                                : 'text-[15px]',
+                                        )}
+                                    />
+                                </div>
+                            )}
                             {translation.notice}
                             {showImages && <CommitImages commit={commit} />}
                             {commit.poll && (
@@ -539,7 +649,15 @@ export function CommitCard({
                                         />
                                         {translation.button}
                                     </div>
-                                    <CommitSecondaryActions commit={commit} />
+                                    <CommitSecondaryActions
+                                        commit={commit}
+                                        canEdit={isEditable}
+                                        onEdit={() => {
+                                            setEditedBody(commit.body);
+                                            setEditError(null);
+                                            setIsEditing(true);
+                                        }}
+                                    />
                                 </div>
                             ) : (
                                 <ThreadActions

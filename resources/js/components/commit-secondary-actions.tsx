@@ -1,4 +1,4 @@
-import { Ellipsis, Flag, LinkIcon } from 'lucide-react';
+import { Ellipsis, Flag, LinkIcon, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import {
     CommitReportButton,
@@ -19,10 +19,14 @@ export function CommitSecondaryActions({
     commit,
     keyShortcut,
     isReply = false,
+    canEdit = false,
+    onEdit,
 }: {
     commit: Commit;
     keyShortcut?: string;
     isReply?: boolean;
+    canEdit?: boolean;
+    onEdit?: () => void;
 }) {
     return (
         <div className="ml-auto flex items-center gap-0.5">
@@ -37,12 +41,20 @@ export function CommitSecondaryActions({
                 <CopyLinkButton commit={commit} keyShortcut={keyShortcut} />
                 <CommitReportButton commit={commit} />
             </div>
-            <CommitActionsMenu commit={commit} />
+            <CommitActionsMenu commit={commit} canEdit={canEdit} onEdit={onEdit} />
         </div>
     );
 }
 
-function CommitActionsMenu({ commit }: { commit: Commit }) {
+function CommitActionsMenu({
+    commit,
+    canEdit,
+    onEdit,
+}: {
+    commit: Commit;
+    canEdit: boolean;
+    onEdit?: () => void;
+}) {
     const [isReporting, setIsReporting] = useState(false);
     const { copyLink } = useCopyLink(commit);
     const canReport = useCanReport(commit);
@@ -61,6 +73,12 @@ function CommitActionsMenu({ commit }: { commit: Commit }) {
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                    {canEdit && onEdit && (
+                        <DropdownMenuItem onSelect={onEdit}>
+                            <Pencil />
+                            Edit post
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onSelect={copyLink}>
                         <LinkIcon />
                         Copy link

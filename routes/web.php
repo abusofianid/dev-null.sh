@@ -370,6 +370,9 @@ Route::middleware('auth')->group(function (): void {
     Route::post('commits', [CommitController::class, 'store'])
         ->middleware([PreventPostingInTimeout::class, RequireCommitRules::class, ThrottleCommits::class])
         ->name('commit.store');
+    Route::put('commits/{commit}', [CommitController::class, 'update'])
+        ->middleware([PreventPostingInTimeout::class, ThrottleCommits::class])
+        ->name('commit.update');
     Route::post('commits/preview', [CommitPreviewController::class, 'store'])
         ->name('commit-preview.store');
     Route::post('commits/{commit}/translation', [CommitTranslationController::class, 'store'])

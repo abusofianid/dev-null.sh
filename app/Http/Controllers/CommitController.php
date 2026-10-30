@@ -6,11 +6,13 @@ namespace App\Http\Controllers;
 
 use App\Actions\CreateCommit;
 use App\Actions\DeleteCommit;
+use App\Actions\UpdateCommitBody;
 use App\Dto\ThreadContinuation;
 use App\Enums\CommitStatus;
 use App\Http\Requests\CreateCommitRequest;
 use App\Http\Requests\DeleteCommitRequest;
 use App\Http\Requests\ShowCommitRequest;
+use App\Http\Requests\UpdateCommitBodyRequest;
 use App\Models\Commit;
 use App\Models\User;
 use App\Queries\CommitAncestorsQuery;
@@ -86,6 +88,13 @@ final readonly class CommitController
                 'message' => 'Your commit is pending review. Everyone will see it once it is approved.',
             ]);
         }
+
+        return back();
+    }
+
+    public function update(UpdateCommitBodyRequest $request, Commit $commit, UpdateCommitBody $action): RedirectResponse
+    {
+        $action->handle($commit, $request->string('body')->value());
 
         return back();
     }

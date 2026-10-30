@@ -8,6 +8,7 @@ use App\Enums\CommitStatus;
 use App\Enums\Log;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Jobs\DetectCommitLanguage;
+use App\Jobs\EmbedCommit;
 use App\Jobs\UnfurlLink;
 use App\Models\Commit;
 use App\Models\CommitImage;
@@ -1520,4 +1521,65 @@ it('keeps the query string out of the commit it moves to', function (): void {
 
     $this->get("/@octocat/commits/{$commit->id}?commit=nope")
         ->assertRedirect("/@OctoCat/commits/{$commit->id}?commit=nope");
+});
+
+
+it('may update the text of its own commit', function (): void {
+    Queue::fake();
+
+    $commit = Commit::factory()->create(['body' => 'Before editing']);
+
+    $this->actingAs($commit->user)
+        ->fromRoute('log.show', Log::Following)
+        ->put(route('commit.update', $commit), ['body' => 'After editing'])
+        ->assertRedirectToRoute('log.show', Log::Following)
+        ->assertSessionHasNoErrors();
+
+    expect($commit->refresh()->body)->toBe('After editing');
+
+    Queue::assertPushed(EmbedCommit::class);
+});
+
+it('does not let another user update a commit', function (): void {
+    $commit = Commit::factory()->create();
+    $originalBody = $commit->body;
+
+    $this->actingAs(User::factory()->create())
+        ->putJson(route('commit.update', $commit), ['body' => 'Not yours'])
+        ->assertForbidden();
+
+    expect($commit->refresh()->body)->toBe($originalBody);
+});
+
+it('requires authentication to update a commit', function (): void {
+    $commit = Commit::factory()->create();
+    $originalBody = $commit->body;
+
+    $this->put(route('commit.update', $commit), ['body' => 'No session'])
+        ->assertRedirectToRoute('home');
+
+    expect($commit->refresh()->body)->toBe($originalBody);
+});
+
+it('validates the edited commit body with the normal body limits', function (): void {
+    $commit = Commit::factory()->create(['body' => 'Original']);
+
+    $this->actingAs($commit->user)
+        ->putJson(route('commit.update', $commit), ['body' => str_repeat('a', 4001)])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('body');
+
+    expect($commit->refresh()->body)->toBe('Original');
+});
+
+it('updates the mention identities when the text is edited', function (): void {
+    $commit = Commit::factory()->create(['body' => 'Original', 'mentions' => []]);
+    $mentioned = User::factory()->create(['handle' => 'newmention']);
+
+    $this->actingAs($commit->user)
+        ->put(route('commit.update', $commit), ['body' => 'Thanks @newmention!'])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($commit->refresh()->mentions)->toBe(['newmention' => $mentioned->id]);
 });
