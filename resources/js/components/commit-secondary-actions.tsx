@@ -45,7 +45,7 @@ export function CommitSecondaryActions({
                 commit={commit}
                 canEdit={canEdit}
                 onEdit={onEdit}
-/>
+            />
         </div>
     );
 }
