@@ -408,7 +408,7 @@ Direct remotes disappear from the inbox when the other person deletes their acco
 
 ### Remotes: calls
 
-In the web app, a direct remote that has already started can make a one-on-one **call** from the phone button next to Ping in its composer, on the Remotes page or in the dock. Calls work wherever a ping would: both people need Remotes on, no block, and a conversation someone has already said something in. Orgs have calls too (see below). The Mac and mobile apps can't make or answer calls yet.
+In the web app, a direct remote that has already started can make a one-on-one **call** from the phone button next to Ping in its composer, on the Remotes page or in the dock. Calls work wherever a ping would: both people need Remotes on, no block, and a conversation someone has already said something in. Orgs have calls too (see below). The Mac app makes and answers calls too, one-on-one and in orgs, while it's open; the mobile app can't make or answer calls yet.
 
 The call lives on top of that remote's composer: confirming, ringing, and then the call itself with its timer, mute, camera, and **Hang up**. Messages you send during a call are ordinary messages in the same remote. A call is between two people, so it ends for both as soon as either hangs up. Screen sharing is shown as coming soon.
 
@@ -566,7 +566,7 @@ Sources: [signed requests](app/Services/SignedRequests.php), [sign-in page](app/
 
 ### Mac app
 
-**/dev/null for Mac** is a native Mac app for all of /dev/null: the Following, Latest, and Trending logs, writing and scheduling commits, replies, quotes, polls, stars, Starred, notifications, profiles, search, and Remotes. It is free, universal (Apple silicon and Intel), and requires macOS 14 or later. Download it from **/apps**, the home for /dev/null's apps, which shows the version, size, release date, and SHA-256 checksum of the current download (`/mac` redirects there, and **Settings → Devices** links to it).
+**/dev/null for Mac** is a native Mac app for all of /dev/null: the Following, Latest, and Trending logs, writing and scheduling commits, replies, quotes, polls, stars, Starred, notifications, profiles, organization pages, search, Remotes, and calls. It is free, universal (Apple silicon and Intel), and requires macOS 14 or later. Download it from **/apps**, the home for /dev/null's apps, which shows the version, size, release date, and SHA-256 checksum of the current download (`/mac` redirects there, and **Settings → Devices** links to it).
 
 To install it, open `DevNull.dmg`, drag /dev/null onto Applications, and open it. The file is named `DevNull.app`, because a slash can't go in a file name; everywhere else, the app is called /dev/null. The app is signed and notarized by Apple, so macOS opens it without a warning.
 
