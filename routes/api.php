@@ -56,6 +56,7 @@ use App\Http\Controllers\Api\OrgPinController;
 use App\Http\Controllers\Api\OrgPingController;
 use App\Http\Controllers\Api\OrgReadController;
 use App\Http\Controllers\Api\OrgTypingController;
+use App\Http\Controllers\Api\ProfileSearchController;
 use App\Http\Controllers\Api\RelatedCommitController;
 use App\Http\Controllers\Api\RemoteCandidateController;
 use App\Http\Controllers\Api\ScheduledCommitController;
@@ -186,7 +187,11 @@ Route::prefix('v1')->middleware('throttle:api')->group(function (): void {
         Route::get('users/{user:handle}/following/organizations', [UserFollowedOrganizationController::class, 'index'])
             ->name('api-user-followed-organization.index');
 
-        // Search: people by name or handle, and commits by meaning, as the web's search finds them...
+        // Search: people and organizations by name or handle, and commits by meaning, as the web's search finds them...
+        Route::get('search/profiles', [ProfileSearchController::class, 'index'])
+            ->middleware('throttle:people')
+            ->name('api-profile-search.index');
+        // Deprecated for search/profiles, kept for the apps that still call it...
         Route::get('search/users', [UserSearchController::class, 'index'])
             ->middleware('throttle:people')
             ->name('api-user-search.index');

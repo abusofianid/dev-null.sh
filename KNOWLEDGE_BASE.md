@@ -16,7 +16,7 @@ This file documents the platform's features, stack, and stories. Feature entries
   - [Achievement badges and XP](#achievement-badges-and-xp)
   - [Following developers and suggestions](#following-developers-and-suggestions)
   - [Following, Latest, and Trending logs](#following-latest-and-trending-logs)
-  - [Searching developers and commits](#searching-developers-and-commits)
+  - [Searching developers, organizations, and commits](#searching-developers-organizations-and-commits)
   - [Writing commits](#writing-commits)
   - [Translating commits](#translating-commits)
   - [Code, emoji, and mentions](#code-emoji-and-mentions)
@@ -182,13 +182,13 @@ If a background check hits a temporary connection or gateway failure, the page k
 
 Sources: [log types](app/Enums/Log.php), [log queries](app/Queries/LogQueries), [log page](resources/js/pages/log/show.tsx), [background polling](resources/js/lib/background-poll.ts).
 
-### Searching developers and commits
+### Searching developers, organizations, and commits
 
-Open search with **⌘/Ctrl+K** or **/**. Developer search finds people by name or GitHub username. Commit search, also available at `/search`, finds posts by meaning rather than requiring an exact phrase: describe the topic you want to read about. Commit queries must contain at least three characters and at most 100, and cover replies as well as top-level commits. An AI relevance check filters the nearest matches, so a search can return fewer results than asked. Results respect visibility, mutes, and blocks; semantic matching does not guarantee that every relevant commit will be returned. Guests can search developers; searching commits, and `/search`, need sign-in, since each commit search pays for AI. Commit search is limited to 15 searches a minute per person.
+Open search with **⌘/Ctrl+K** or **/**. Developer search finds people by name or GitHub username, and lists the GitHub organizations that already have a page on /dev/null below them, by name or handle. Commit search, also available at `/search`, finds posts by meaning rather than requiring an exact phrase: describe the topic you want to read about. Commit queries must contain at least three characters and at most 100, and cover replies as well as top-level commits. An AI relevance check filters the nearest matches, so a search can return fewer results than asked. Results respect visibility, mutes, and blocks; semantic matching does not guarantee that every relevant commit will be returned. Guests can search developers and organizations; searching commits, and `/search`, need sign-in, since each commit search pays for AI. Commit search is limited to 15 searches a minute per person.
 
 Signed-in users see their three most recent distinct searches above the suggested searches, newest first. Repeating a search moves it to the top; adding a fourth discards the oldest from storage, not just from the display. Recent searches stay in this browser, scoped to the signed-in account, and do not sync to other devices or create server-side history. They are cleared on sign-out or account deletion in that browser. Guests do not retain recent searches.
 
-The public search searches developers and commits, not this knowledge-base file. Feature documentation is available to the internal knowledge-base retriever once indexed; there is no public knowledge-base search endpoint yet.
+The public search searches developers, organizations, and commits, not this knowledge-base file. Feature documentation is available to the internal knowledge-base retriever once indexed; there is no public knowledge-base search endpoint yet.
 
 Sources: [search page](resources/js/pages/search/index.tsx), [commit search query](app/Queries/CommitSearchQuery.php), [search validation](app/Http/Requests/ListCommitSearchRequest.php), [knowledge-base query](app/Queries/KnowledgeBaseSearchQuery.php).
 
@@ -551,7 +551,7 @@ A signed request sees what the web shows you, such as your own pending commits. 
 - stash or reopen conversations and orgs, pin and mute them, merge or drop message requests, and send typing indicators;
 - switch Pastéis mode and give pastéis;
 - report commits;
-- search people by name or handle, and commits by meaning, with the web's limit of 15 commit searches a minute;
+- search people and organizations by name or handle, and commits by meaning, with the web's limit of 15 commit searches a minute;
 - schedule commits, list your queue, cancel a scheduled commit, or post it early;
 - pin a commit to your profile, or unpin it;
 - translate commits;
