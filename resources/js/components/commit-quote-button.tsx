@@ -21,6 +21,7 @@ import InputError from '@/components/input-error';
 import { LinkCardPicker } from '@/components/link-card-picker';
 import { MentionTextarea } from '@/components/mention-textarea';
 import { QuotedCommit } from '@/components/quoted-commit';
+import { StableLabel } from '@/components/stable-label';
 import { StashLabel } from '@/components/stash-label';
 import { Button } from '@/components/ui/button';
 import {
@@ -380,7 +381,11 @@ function QuoteComposer({
                                     title={`Quote (${keys.combo(keys.mod, keys.enter)})`}
                                     data-test="submit-quote-button"
                                 >
-                                    {processing ? 'Quoting…' : 'Quote'}
+                                    <StableLabel
+                                        label="Quote"
+                                        pendingLabel="Quoting…"
+                                        isPending={processing}
+                                    />
                                 </Button>
                             </div>
                         </div>

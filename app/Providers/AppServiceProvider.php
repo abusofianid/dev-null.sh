@@ -42,6 +42,7 @@ use App\Services\TranslationProviders\OpenCodeTranslationProvider;
 use App\Services\TurnProviders\CloudflareTurnProvider;
 use App\Services\TurnProviders\LocalTurnProvider;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Foundation\DevCommands;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -106,6 +107,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        DevCommands::artisan('serve', 'server');
+
         $this->bootRateLimitingDefaults();
 
         $this->bootExceptionHandling();

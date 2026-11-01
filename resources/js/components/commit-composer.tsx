@@ -191,6 +191,7 @@ function CommitComposerBody({
         <RailAvatar user={user} progress={progress} />
     ) : (
         <Link
+            prefetch
             href={show(user)}
             aria-label="View your profile"
             className="flex rounded-full"
@@ -443,6 +444,7 @@ function CommitComposerBody({
                                 message={scheduleError}
                             />
                             <Link
+                                prefetch
                                 href={ScheduledCommitController.index()}
                                 className="text-xs font-medium text-primary hover:underline"
                             >

@@ -97,6 +97,7 @@ use App\Http\Controllers\OrgPinController;
 use App\Http\Controllers\OrgPingController;
 use App\Http\Controllers\OrgReadController;
 use App\Http\Controllers\OrgTypingController;
+use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\ProductMetricsController;
 use App\Http\Controllers\ProfileOpenGraphImageController;
@@ -139,6 +140,7 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserRemotePreferencesController;
 use App\Http\Controllers\UserRemotesController;
 use App\Http\Controllers\UserSitemapController;
+use App\Http\Controllers\UserTermsController;
 use App\Http\Controllers\UserTimeoutController;
 use App\Http\Controllers\UserTimezoneController;
 use App\Http\Controllers\UserTranslationLanguageController;
@@ -204,6 +206,9 @@ Route::post('emails/unsubscribe/{user}', [UnsubscriptionController::class, 'stor
 
 // How /dev/null was built, readable by everyone...
 Route::get('about', [AboutController::class, 'show'])->name('about.show');
+
+// Who sponsors /dev/null, readable by everyone...
+Route::get('partners', [PartnerController::class, 'index'])->name('partner.index');
 
 // Logos, colors, and backgrounds, downloadable by everyone...
 Route::get('brand', [BrandController::class, 'show'])->name('brand.show');
@@ -334,6 +339,8 @@ Route::middleware('auth')->group(function (): void {
     Route::post('logout', [SessionController::class, 'destroy'])
         ->middleware(SerializePushSessions::class)
         ->name('logout');
+
+    Route::put('terms', [UserTermsController::class, 'update'])->name('user-terms.update');
 
     // Banned, where a banned user is sent from everywhere else...
     Route::get('banned', [BannedController::class, 'show'])->name('banned.show');

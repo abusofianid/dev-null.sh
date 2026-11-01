@@ -55,6 +55,7 @@ export type Auth = {
     isAdmin: boolean;
     automaticTranslation: boolean;
     mustReadCommitRules: boolean;
+    termsToAccept: string | null;
     log: Log | null;
     unreadNotificationsCount: number;
     unreadMessagesCount: number;

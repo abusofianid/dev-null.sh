@@ -92,7 +92,7 @@ import {
 } from '@/lib/commit';
 import { commitStateKey } from '@/lib/commit-state';
 import { hasModKey } from '@/lib/keyboard';
-import { exactCountTitle, formatCount, formatExactCount } from '@/lib/numbers';
+import { exactCountTitle, formatCount } from '@/lib/numbers';
 import {
     characterCount,
     cn,
@@ -556,6 +556,7 @@ export function ShowThreadLink({ thread }: { thread: Thread }) {
 
     return (
         <Link
+            prefetch
             href={CommitController.show({ profile: commit.author, commit })}
             className="mt-2 -ml-2 flex w-fit items-center gap-1 rounded-md px-2 py-0.5 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             aria-label={`Show thread by @${commit.author.handle}`}
@@ -894,13 +895,15 @@ function ReplySkeleton() {
         <div
             role="status"
             aria-label="Loading replies"
-            className="flex gap-2 pt-2.5 pl-(--indent) motion-safe:animate-pulse sm:gap-2.5"
+            className="pt-2.5 pl-(--indent) motion-safe:animate-in motion-safe:delay-300 motion-safe:fill-mode-backwards motion-safe:fade-in"
         >
-            <span className="size-6 shrink-0 rounded-full bg-muted sm:size-7" />
-            <span className="flex-1">
-                <span className="my-1 block h-3 w-1/3 rounded bg-muted" />
-                <span className="my-1.5 block h-3 w-3/4 rounded bg-muted" />
-                <span className="mt-2.5 block h-3 w-24 rounded bg-muted" />
+            <span className="flex gap-2 motion-safe:animate-pulse sm:gap-2.5">
+                <span className="size-6 shrink-0 rounded-full bg-muted sm:size-7" />
+                <span className="flex-1">
+                    <span className="my-1 block h-3 w-1/3 rounded bg-muted" />
+                    <span className="my-1.5 block h-3 w-3/4 rounded bg-muted" />
+                    <span className="mt-2.5 block h-3 w-24 rounded bg-muted" />
+                </span>
             </span>
         </div>
     );
@@ -1165,6 +1168,7 @@ function CommitReply({
                 <div className="relative shrink-0">
                     <UserPreview user={reply.author} anchor={avatarRef}>
                         <Link
+                            prefetch
                             ref={avatarNodeRef}
                             href={show(reply.author)}
                             className="block rounded-full"
@@ -1201,12 +1205,14 @@ function CommitReply({
                             className="flex min-w-0 items-baseline gap-1.5"
                         >
                             <Link
+                                prefetch
                                 href={show(reply.author)}
                                 className="truncate font-semibold hover:underline"
                             >
                                 {reply.author.name}
                             </Link>
                             <Link
+                                prefetch
                                 href={show(reply.author)}
                                 tabIndex={-1}
                                 className="hidden truncate font-mono text-xs text-muted-foreground sm:inline"
@@ -1216,6 +1222,7 @@ function CommitReply({
                         </UserPreview>
                         {isQuote && (
                             <Link
+                                prefetch
                                 href={permalink}
                                 className="shrink-0 font-mono text-xs text-primary hover:underline"
                                 data-test="quote-reply-label"
@@ -1235,6 +1242,7 @@ function CommitReply({
                             }
                         >
                             <Link
+                                prefetch
                                 href={permalink}
                                 className="shrink-0 font-mono text-xs text-muted-foreground hover:underline"
                             >

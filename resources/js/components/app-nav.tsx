@@ -120,7 +120,6 @@ function useNavItems(): (NavItem & { isActive: boolean })[] {
                       title: 'Operations',
                       href: OperationsController.show(),
                       icon: Activity,
-                      prefetch: false,
                   },
               ]
             : []),

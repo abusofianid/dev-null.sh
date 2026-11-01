@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import CommitPollVoteController from '@/actions/App/Http/Controllers/CommitPollVoteController';
 import { BodySegments } from '@/components/commit-body';
+import { StableLabel } from '@/components/stable-label';
 import { Button } from '@/components/ui/button';
 import { useCommitNotFound } from '@/hooks/use-deleted-resources';
 import { useNow } from '@/hooks/use-now';
@@ -197,7 +198,11 @@ export function CommitPoll({
                                 disabled={choice === '' || request.processing}
                                 data-test="poll-vote-button"
                             >
-                                {request.processing ? 'Voting…' : 'Vote'}
+                                <StableLabel
+                                    label="Vote"
+                                    pendingLabel="Voting…"
+                                    isPending={request.processing}
+                                />
                             </Button>
                         )}
                     </div>

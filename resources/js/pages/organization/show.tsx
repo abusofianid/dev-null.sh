@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { show } from '@/actions/App/Http/Controllers/UserController';
 import { BioText } from '@/components/bio-text';
 import { CommitFeed, EmptyFeed } from '@/components/commit-feed';
+import { useIsFollowing } from '@/components/follow-button';
 import { GitHubIcon } from '@/components/github-icon';
 import { OrganizationAvatar } from '@/components/organization-avatar';
 import { OrganizationFollowButton } from '@/components/organization-follow-button';
@@ -45,6 +46,9 @@ export default function Show({
     // Only the first claim makes an admin. While a claim failed, its alert offers to try again instead.
     const claimable = auth.user !== null && admins.length === 0;
     const canClaim = claimable && claimFailed === undefined;
+    const [isFollowingNow] = useIsFollowing(organization, isFollowing);
+    const shownFollowersCount =
+        followersCount + Number(isFollowingNow) - Number(isFollowing);
 
     return (
         <>
@@ -90,7 +94,7 @@ export default function Show({
                         )}
                         {settingsUrl && (
                             <Button variant="outline" asChild>
-                                <Link href={settingsUrl}>
+                                <Link href={settingsUrl} prefetch>
                                     <Settings />
                                     Settings
                                 </Link>
@@ -174,12 +178,12 @@ export default function Show({
                 <p className="mt-4 flex gap-1.5 text-sm">
                     <span
                         className="font-mono font-medium tabular-nums"
-                        title={exactCountTitle(followersCount)}
+                        title={exactCountTitle(shownFollowersCount)}
                     >
-                        {formatCount(followersCount)}
+                        {formatCount(shownFollowersCount)}
                     </span>
                     <span className="text-muted-foreground">
-                        {followersCount === 1 ? 'follower' : 'followers'}
+                        {shownFollowersCount === 1 ? 'follower' : 'followers'}
                     </span>
                 </p>
 
@@ -190,6 +194,7 @@ export default function Show({
                             <Link
                                 key={admin.id}
                                 href={show(admin.handle)}
+                                prefetch
                                 className="flex items-center gap-1.5 text-foreground hover:underline"
                             >
                                 <UserAvatar

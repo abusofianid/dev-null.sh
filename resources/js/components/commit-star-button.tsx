@@ -238,7 +238,7 @@ function StarCount({
                     {count > 0 && (
                         <span
                             data-test="star-count"
-                            className="min-w-[1ch] text-left"
+                            className="min-w-[1ch] text-left tabular-nums"
                         >
                             {formatCount(count)}
                         </span>

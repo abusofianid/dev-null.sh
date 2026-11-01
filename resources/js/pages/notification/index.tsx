@@ -695,6 +695,7 @@ export function ActorAvatar({
             <span ref={anchor} className="flex">
                 {linked ? (
                     <Link
+                        prefetch
                         href={show(user)}
                         tabIndex={-1}
                         aria-hidden
@@ -866,6 +867,7 @@ export function NotificationContent({
                             className="relative z-10 flex min-w-0 items-center"
                         >
                             <Link
+                                prefetch
                                 href={show(actor)}
                                 className="flex min-w-0 items-center gap-1.5 rounded-md outline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
                             >
@@ -888,6 +890,7 @@ export function NotificationContent({
                             {action}
                         </span>
                         <Link
+                            prefetch
                             href={href}
                             className="ml-auto flex shrink-0 items-center gap-2 rounded-md pl-2 outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
                         >
@@ -895,7 +898,7 @@ export function NotificationContent({
                             {time}
                         </Link>
                     </div>
-                    <Link href={href} tabIndex={-1} className="block">
+                    <Link href={href} prefetch tabIndex={-1} className="block">
                         {excerpt}
                     </Link>
                 </div>
@@ -907,6 +910,7 @@ export function NotificationContent({
         return (
             <div className="flex items-start gap-3">
                 <Link
+                    prefetch
                     href={href}
                     className="flex min-w-0 flex-1 gap-2.5 rounded-md outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
                 >
@@ -961,6 +965,7 @@ export function NotificationContent({
     const actorLinks = (
         <>
             <Link
+                prefetch
                 href={show(actor)}
                 className="relative z-10 truncate font-semibold hover:underline"
                 title={actor.name}
@@ -968,6 +973,7 @@ export function NotificationContent({
                 {actor.name}
             </Link>
             <Link
+                prefetch
                 href={show(actor)}
                 tabIndex={-1}
                 className="relative z-10 shrink-4 truncate font-mono text-[13px] text-muted-foreground"
@@ -980,6 +986,7 @@ export function NotificationContent({
 
     const rowLink = (
         <Link
+            prefetch
             href={href}
             data-notification-link
             className="after:absolute after:inset-0 after:z-[1] after:rounded-md after:outline-offset-4 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-ring"
@@ -1137,6 +1144,7 @@ export function NotificationContent({
                                             (grouped ? (
                                                 <>
                                                     <Link
+                                                        prefetch
                                                         href={show(actor)}
                                                         className="relative z-10 inline-block max-w-full truncate align-bottom font-semibold hover:underline"
                                                         title={actor.name}
@@ -1147,6 +1155,7 @@ export function NotificationContent({
                                                         <>
                                                             and{' '}
                                                             <Link
+                                                                prefetch
                                                                 href={show(
                                                                     secondActor,
                                                                 )}
@@ -1180,6 +1189,7 @@ export function NotificationContent({
                                                         className="relative z-10"
                                                     >
                                                         <Link
+                                                            prefetch
                                                             href={show(actor)}
                                                             className="relative z-10 inline-block max-w-full truncate align-bottom font-semibold hover:underline"
                                                             title={actor.name}
@@ -1187,6 +1197,7 @@ export function NotificationContent({
                                                             {actor.name}
                                                         </Link>{' '}
                                                         <Link
+                                                            prefetch
                                                             href={show(actor)}
                                                             tabIndex={-1}
                                                             className="relative z-10 inline-block max-w-full truncate align-bottom font-mono text-[13px] text-muted-foreground"

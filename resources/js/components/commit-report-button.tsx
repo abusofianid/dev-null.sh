@@ -11,6 +11,7 @@ import {
     useImagePreviewCleanup,
 } from '@/components/commit-image-picker';
 import InputError from '@/components/input-error';
+import { StableLabel } from '@/components/stable-label';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -309,7 +310,11 @@ function ReportForm({
                             !form.data.reason
                         }
                     >
-                        {form.processing ? 'Sending…' : 'Send report'}
+                        <StableLabel
+                            label="Send report"
+                            pendingLabel="Sending…"
+                            isPending={form.processing}
+                        />
                     </Button>
                 </DialogFooter>
             </form>

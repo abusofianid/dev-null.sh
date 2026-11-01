@@ -90,7 +90,7 @@ export default function Show({
         };
     }, [log]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const tabs = tabsRef.current;
 
         if (!tabs) {

@@ -21,6 +21,7 @@ it('says whether the person accepted the terms as they stand', function (): void
 });
 
 it('records that the terms were accepted, and answers as the current user endpoint does', function (): void {
+    config(['legal.terms_version' => '2026-11-01T00:00:00Z']);
     Date::setTestNow('2026-11-01 12:00:00');
 
     $user = User::factory()->create();
