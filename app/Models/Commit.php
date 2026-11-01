@@ -203,6 +203,14 @@ final class Commit extends Model
     }
 
     /**
+     * A commit is its author's own: a person's, or each member's of the organization it is from.
+     */
+    public function isOwnedBy(User $user): bool
+    {
+        return $this->author_id !== null && ($this->author_id === $user->id || $user->organizations()->whereKey($this->author_id)->exists());
+    }
+
+    /**
      * Approved commits are visible to everyone but people across a block with their author, which an organization never
      * is. Whoever posted a commit can also see it.
      */
@@ -229,9 +237,14 @@ final class Commit extends Model
             && $this->created_at->greaterThan(now()->subMinutes(self::CHECKING_MINUTES));
     }
 
+    /**
+     * A deleted commit comes back within seconds, unless its author has gone since: a deleted account takes its own
+     * commits' authors with it, and an organization GitHub no longer has its own. Whoever posted an organization's
+     * commit may have gone, while its members still can bring it back.
+     */
     public function isRestorable(): bool
     {
-        return $this->user_id !== null && $this->deleted_at !== null && now()->lessThan($this->deleted_at->copy()->addSeconds(self::RESTORABLE_SECONDS));
+        return $this->author_id !== null && $this->deleted_at !== null && now()->lessThan($this->deleted_at->copy()->addSeconds(self::RESTORABLE_SECONDS));
     }
 
     /**
