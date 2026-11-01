@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read CommitStatus|null $ai_decision
  * @property-read list<string>|null $ai_categories
  * @property-read list<float>|null $embedding
+ * @property-read CarbonInterface|null $headlines_classified_at
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  * @property-read CarbonInterface|null $deleted_at
@@ -58,6 +59,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read Commit|null $quotedCommit
  * @property-read Collection<int, Commit> $quotes
  * @property-read Collection<int, CommitImage> $images
+ * @property-read Collection<int, Headline> $headlines
  */
 #[Hidden([
     'user',
@@ -66,6 +68,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'ai_decision',
     'ai_categories',
     'embedding',
+    'headlines_classified_at',
 ])]
 #[UseEloquentBuilder(CommitBuilder::class)]
 final class Commit extends Model
@@ -129,6 +132,7 @@ final class Commit extends Model
             'ai_decision' => CommitStatus::class,
             'ai_categories' => 'array',
             'embedding' => AsVector::class,
+            'headlines_classified_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
@@ -183,6 +187,14 @@ final class Commit extends Model
     public function stars(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'stars')->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<Headline, $this>
+     */
+    public function headlines(): BelongsToMany
+    {
+        return $this->belongsToMany(Headline::class)->withTimestamps(updatedAt: false);
     }
 
     /**
@@ -293,6 +305,17 @@ final class Commit extends Model
     public function quotedCommit(): BelongsTo
     {
         return $this->belongsTo(self::class, 'quoted_commit_id');
+    }
+
+    public function headlineBody(): string
+    {
+        $quoted = $this->quotedCommit;
+
+        if ($quoted === null || $quoted->trashed() || $quoted->status !== CommitStatus::Approved || $quoted->body === '') {
+            return $this->body;
+        }
+
+        return json_encode(['post' => $this->body, 'quoted_post' => $quoted->body], JSON_THROW_ON_ERROR);
     }
 
     /**
