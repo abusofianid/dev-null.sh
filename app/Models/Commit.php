@@ -224,7 +224,7 @@ final class Commit extends Model
 
     /**
      * Approved commits are visible to everyone but people across a block with their author, which an organization never
-     * is. Whoever posted a commit can also see it.
+     * is. Whoever posted a commit can also see it, and the members of the organization it is from.
      */
     public function isVisibleTo(?User $user): bool
     {
@@ -232,10 +232,13 @@ final class Commit extends Model
             return true;
         }
 
+        if ($this->status !== CommitStatus::Approved) {
+            return $user instanceof User && $this->isOwnedBy($user);
+        }
+
         $author = $this->author?->user;
 
-        return $this->status === CommitStatus::Approved
-            && (! $user instanceof User || ! $author instanceof User || ! $user->hasBlockWith($author));
+        return ! $user instanceof User || ! $author instanceof User || ! $user->hasBlockWith($author);
     }
 
     /**
@@ -347,7 +350,7 @@ final class Commit extends Model
             return true;
         }
 
-        return $user instanceof User && ($this->user_id === $user->id || $user->isAdmin());
+        return $user instanceof User && ($this->user_id === $user->id || $user->isAdmin() || $this->isOwnedBy($user));
     }
 
     /**

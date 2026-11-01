@@ -15,7 +15,9 @@ use App\Models\Notification;
 use App\Models\Poll;
 use App\Models\User;
 use App\Queries\CommitBuilder;
+use App\Queries\ProfileRecipientsQuery;
 use App\Queries\TomQuery;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -29,6 +31,7 @@ final readonly class UpdateCommitStatuses
         private CreateWorldReply $createWorldReply,
         private UpdateCommitHotScores $updateCommitHotScores,
         private TomQuery $tomQuery,
+        private ProfileRecipientsQuery $recipients,
     ) {
         //
     }
@@ -61,18 +64,33 @@ final readonly class UpdateCommitStatuses
                 ->delete();
 
             if ($status === CommitStatus::Rejected) {
-                // An organization's commit whose poster has since deleted their account has no one to tell.
-                Notification::query()->insert($commits->whereNotNull('user_id')->map(fn (Commit $commit): array => [
-                    'id' => Str::uuid7()->toString(),
-                    'recipient_id' => $commit->user_id,
-                    'actor_id' => $commit->user_id,
-                    'type' => NotificationType::Rejected->value,
-                    'commit_id' => $commit->id,
-                    'key' => 'moderated:'.$commit->id,
-                    'reason' => $reason,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ])->values()->all());
+                // Every member hears about an organization's rejected commit, each as their own actor, so nothing
+                // tells them who posted it.
+                /** @var Collection<int, object{profile_id: string, user_id: string, organization_id: string|null}> $recipients */
+                $recipients = DB::query()->fromSub($this->recipients->builder(), 'recipients')
+                    ->whereIn('profile_id', $commits->pluck('author_id')->filter()->unique()->values()->all())
+                    ->get();
+
+                $notifications = [];
+
+                foreach ($commits as $commit) {
+                    foreach ($recipients->where('profile_id', $commit->author_id) as $recipient) {
+                        $notifications[] = [
+                            'id' => Str::uuid7()->toString(),
+                            'recipient_id' => $recipient->user_id,
+                            'actor_id' => $recipient->user_id,
+                            'organization_id' => $recipient->organization_id,
+                            'type' => NotificationType::Rejected->value,
+                            'commit_id' => $commit->id,
+                            'key' => 'moderated:'.$commit->id,
+                            'reason' => $reason,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                }
+
+                Notification::query()->insert($notifications);
             }
 
             $this->updateCommitHotScores->handle($commits->modelKeys());
@@ -83,7 +101,7 @@ final readonly class UpdateCommitStatuses
                     ->whereNull('opened_at')
                     ->update(['opened_at' => now()]);
 
-                // As when they are posted, an organization's commits notify no one yet, and get no welcome or answer.
+                // As when they are posted, an organization's commits notify no one yet.
                 $personal = $commits->filter(fn (Commit $commit): bool => $commit->author_id === $commit->user_id);
 
                 $this->createReplyNotifications->handle(...$personal);
@@ -91,12 +109,12 @@ final readonly class UpdateCommitStatuses
                 $this->createMentionNotifications->handle(...$personal);
                 $this->createFirstCommitNotifications->handle(...$personal);
 
-                $personal->each(fn (Commit $commit) => $this->createWorldReply->handle($commit));
+                $commits->each(fn (Commit $commit) => $this->createWorldReply->handle($commit));
                 LinkCommitTopics::dispatchFor(...$commits->all());
                 ProcessCommitHeadlines::dispatchFor(...$commits->all());
 
                 if (($tom = $this->tomQuery->get()) instanceof User) {
-                    foreach ($personal as $commit) {
+                    foreach ($commits as $commit) {
                         if ($commit->user?->github_id !== CreateTomFriendship::GITHUB_ID
                             && $commit->isAddressedTo($tom)) {
                             dispatch(new ReplyAsTom($commit->id));

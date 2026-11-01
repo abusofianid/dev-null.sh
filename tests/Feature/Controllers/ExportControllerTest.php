@@ -387,6 +387,7 @@ it('exports received notifications without revealing moderators', function (): v
         ->and($notifications['followed'])->toBe([
             'type' => 'followed',
             'actor' => 'friendly-dev',
+            'organization' => null,
             'commit_id' => null,
             'reason' => null,
             'level' => null,
@@ -396,6 +397,7 @@ it('exports received notifications without revealing moderators', function (): v
         ->and($notifications['rejected'])->toBe([
             'type' => 'rejected',
             'actor' => null,
+            'organization' => null,
             'commit_id' => $commit->id,
             'reason' => 'Looks like spam.',
             'level' => null,
@@ -405,6 +407,7 @@ it('exports received notifications without revealing moderators', function (): v
         ->and($notifications['leveled_up'])->toBe([
             'type' => 'leveled_up',
             'actor' => null,
+            'organization' => null,
             'commit_id' => null,
             'reason' => null,
             'level' => 3,

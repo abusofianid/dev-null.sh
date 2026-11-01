@@ -689,8 +689,8 @@ function OwnCommitExcerpt({ segments }: { segments: BodySegment[] }) {
 }
 
 /**
- * A quote always quotes the recipient's own commit, so it shows like the other commits of theirs here, or as the usual
- * tombstone once deleted.
+ * A quote always quotes the recipient's own commit, or their organization's, so it shows like the other commits of
+ * theirs here, or as the usual tombstone once deleted.
  */
 function QuotedOwnCommit({
     commit,
@@ -822,7 +822,9 @@ export function NotificationContent({
         (!summary && notification.type === 'starred')
             ? show(actor)
             : CommitController.show({
-                  profile: isOwnCommit ? user : actor,
+                  profile: isOwnCommit
+                      ? (notification.organization ?? user)
+                      : actor,
                   commit: notification.commit,
               });
     const time = (
@@ -834,17 +836,22 @@ export function NotificationContent({
             {formatRelativeTime(notification.created_at, now)}
         </time>
     );
+    // A member hears about the organization's commits and mentions as the organization's, not their own.
+    const organization = notification.organization;
+    const whose = organization ? `@${organization.handle}'s` : 'your';
     const action = {
         followed: 'followed you',
-        replied: 'replied to your commit',
-        quoted: 'quoted your commit',
+        replied: `replied to ${whose} commit`,
+        quoted: `quoted ${whose} commit`,
         starred: isImageOnly
-            ? `starred your ${starredImages.length === 1 ? 'image' : 'images'}`
-            : 'starred your commit',
-        mentioned: 'mentioned you',
+            ? `starred ${whose} ${starredImages.length === 1 ? 'image' : 'images'}`
+            : `starred ${whose} commit`,
+        mentioned: organization
+            ? `mentioned @${organization.handle}`
+            : 'mentioned you',
         first_commit: 'made their first commit',
-        approved: 'Your commit was approved',
-        rejected: 'Your commit was rejected',
+        approved: `${organization ? whose : 'Your'} commit was approved`,
+        rejected: `${organization ? whose : 'Your'} commit was rejected`,
         leveled_up: level && `You reached level ${level.level}: ${level.rank}`,
     }[notification.type];
     const excerpt =
@@ -876,7 +883,9 @@ export function NotificationContent({
                 </p>
             )}
             <p className="mt-1">
-                Only you can see this update and your rejected commit.
+                {organization
+                    ? `Only @${organization.handle}'s members can see this update and its rejected commit.`
+                    : 'Only you can see this update and your rejected commit.'}
             </p>
         </div>
     );
