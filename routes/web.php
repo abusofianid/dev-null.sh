@@ -75,6 +75,7 @@ use App\Http\Controllers\ModeratedUserController;
 use App\Http\Controllers\ModerationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationGroupController;
+use App\Http\Controllers\NotificationReadAtController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\OperationsEventController;
@@ -443,6 +444,7 @@ Route::middleware('auth')->group(function (): void {
 
     // Notifications...
     Route::get('notifications', [NotificationController::class, 'index'])->name('notification.index');
+    Route::put('notifications/read-at', [NotificationReadAtController::class, 'update'])->name('notification-read-at.update');
     Route::get('notifications/{notification}/group', [NotificationGroupController::class, 'show'])->name('notification-group.show');
 
     // Messages...

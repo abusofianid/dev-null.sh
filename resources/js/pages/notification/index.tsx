@@ -1,5 +1,12 @@
 import type { CancelToken } from '@inertiajs/core';
-import { Head, InfiniteScroll, Link, router, usePoll } from '@inertiajs/react';
+import {
+    Head,
+    InfiniteScroll,
+    Link,
+    router,
+    useHttp,
+    usePoll,
+} from '@inertiajs/react';
 import {
     ArrowUp,
     AtSign,
@@ -17,6 +24,7 @@ import type { ReactNode, RefObject } from 'react';
 import {
     Fragment,
     useEffect,
+    useEffectEvent,
     useId,
     useLayoutEffect,
     useRef,
@@ -25,6 +33,7 @@ import {
 import CommitController from '@/actions/App/Http/Controllers/CommitController';
 import { index } from '@/actions/App/Http/Controllers/NotificationController';
 import { show as groupShow } from '@/actions/App/Http/Controllers/NotificationGroupController';
+import NotificationReadAtController from '@/actions/App/Http/Controllers/NotificationReadAtController';
 import { CommitBodyExcerpt } from '@/components/commit-body';
 import { EmptyFeed } from '@/components/commit-feed';
 import { replaceFailedImage } from '@/components/commit-images';
@@ -241,6 +250,28 @@ export default function Index({
             setArrivals((count) => count + arrived);
         }
     }, [notifications.data]);
+
+    const markRead = useHttp<{ through: string }>({ through: '' });
+    const newestAt = notifications.data[0]?.created_at;
+    const hasUnread = notifications.data.some(
+        (group) => group.unread_count > 0,
+    );
+
+    const markReadThrough = useEffectEvent((through: string) => {
+        markRead.transform(() => ({ through }));
+        void markRead
+            .put(NotificationReadAtController.update.url())
+            .then(() => {
+                router.flushAll();
+                router.reload({ only: ['auth.unreadNotificationsCount'] });
+            });
+    });
+
+    useEffect(() => {
+        if (newestAt !== undefined && hasUnread) {
+            markReadThrough(newestAt);
+        }
+    }, [newestAt, hasUnread]);
 
     useEffect(() => {
         if (arrivals === 0) {

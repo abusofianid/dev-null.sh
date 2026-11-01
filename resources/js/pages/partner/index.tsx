@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import {
     DocumentList,
     DocumentPage,
@@ -8,14 +9,34 @@ import { GitHubIcon } from '@/components/github-icon';
 import { Button } from '@/components/ui/button';
 import { WordmarkText } from '@/components/wordmark-text';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
 
 const sponsorsUrl = 'https://github.com/sponsors/dev-null-sh';
 
-function OpenSpots({ count, className }: { count: number; className: string }) {
+function OpenSpots() {
     return (
-        <ul aria-hidden className={cn('grid gap-2', className)}>
-            {Array.from({ length: count }, (_, index) => (
+        <ul aria-hidden className="grid grid-cols-4 gap-2">
+            {Array.from({ length: 8 }, (_, index) => (
+                <li key={index}>
+                    <a
+                        href={sponsorsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        tabIndex={-1}
+                        className="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-rail text-[13px] text-muted-foreground no-underline! transition-colors hover:border-input hover:bg-muted hover:text-foreground"
+                    >
+                        <Plus className="size-4" />
+                        Your logo
+                    </a>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function PastSpots() {
+    return (
+        <ul aria-hidden className="grid grid-cols-6 gap-2">
+            {Array.from({ length: 12 }, (_, index) => (
                 <li
                     key={index}
                     className="aspect-square rounded-lg border border-dashed border-rail"
@@ -49,7 +70,7 @@ export default function Index() {
                     <p className="text-muted-foreground">
                         Nobody yet. These spots are open.
                     </p>
-                    <OpenSpots count={8} className="grid-cols-4" />
+                    <OpenSpots />
                     <Button asChild className="no-underline!">
                         <a
                             href={sponsorsUrl}
@@ -67,7 +88,7 @@ export default function Index() {
                         When a sponsorship ends, the partner moves here and
                         stays for good. Nobody yet.
                     </p>
-                    <OpenSpots count={12} className="grid-cols-6" />
+                    <PastSpots />
                 </DocumentSection>
 
                 <DocumentSection id="money" title="Where the money goes">
